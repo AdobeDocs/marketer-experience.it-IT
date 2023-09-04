@@ -1,14 +1,14 @@
 ---
-title: Esperienza addetto al marketing
-description: Questa è la pagina della panoramica di [!DNL Marketer Experience].
+title: Esperienza marketer
+description: Questa è la pagina panoramica di  [!DNL Marketer Experience].
 source-git-commit: a3eef4938f645e4db1db335aa36d988c93921f18
-workflow-type: tm+mt
+workflow-type: ht
 source-wordcount: '15'
-ht-degree: 0%
+ht-degree: 100%
 
 ---
 
 
-# Panoramica delle esperienze degli addetti al marketing
+# Panoramica dell’Esperienza del marketer
 
-Benvenuto in [!DNL Marketer Experience] panoramica.
+Ti diamo il benvenuto nella panoramica di [!DNL Marketer Experience].

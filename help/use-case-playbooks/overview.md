@@ -1,17 +1,17 @@
 ---
-title: Panoramica dei playbook di casi d’uso
-description: Questa è la pagina della panoramica dei playbook di Use Case.
+title: Panoramica dei playbook sui casi d’uso
+description: Questa è la pagina di panoramica dei playbook sui casi d’uso
 source-git-commit: a389631a2baa639496f4168a164aa3461157f5ff
-workflow-type: tm+mt
+workflow-type: ht
 source-wordcount: '21'
-ht-degree: 4%
+ht-degree: 100%
 
 ---
 
 
 # Panoramica
 
-Ti diamo il benvenuto nella guida utente del punto di controllo dell&#39;utilità.
+Ti diamo il benvenuto nella guida per l’utente UCP.
 
 ALTRO...
 
