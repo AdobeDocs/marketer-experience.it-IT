@@ -1,13 +1,13 @@
 ---
 title: Evento unitario
 description: Questa è una pagina di istruzioni per la simulazione del tipo di “[!UICONTROL evento unitario]” di convalida del percorso.
-source-git-commit: 0a52611530513fc036ef56999fde36a32ca0f482
-workflow-type: ht
-source-wordcount: '749'
-ht-degree: 100%
+exl-id: 314f967c-e10f-4832-bdba-901424dc2eeb
+source-git-commit: 194667c26ed002be166ab91cc778594dc1f09238
+workflow-type: tm+mt
+source-wordcount: '889'
+ht-degree: 37%
 
 ---
-
 
 # Evento unitario
 
@@ -24,35 +24,73 @@ ht-degree: 100%
 
 ## Prerequisito
 
-* È necessario che sia installato il software Postman
 * Utilizza il playbook per creare risorse di istanze come **[!UICONTROL Percorso]**, **[!UICONTROL Schemi]**, **[!UICONTROL Segmenti]**, **[!UICONTROL Messaggi]** e così via.
 
-Le risorse create verranno visualizzate nella pagina `Bill Of Material`
+* Le risorse create verranno visualizzate nella pagina `Bill Of Material`
 
+<!-- TODO: attached image needs to change once postman is removed from UI -->
 ![Pagina della Distinta base](../assets/bom-page.png)
 
-## Prepara Postman con la raccolta richiesta
-
-1. Visita l’applicazione per il **[!UICONTROL playbook sui casi d’uso]**.
-1. Fai clic sulla rispettiva scheda del **[!UICONTROL Playbook]** per visitare la pagina dei dettagli del **[!UICONTROL Playbook]**.
-1. Visita la pagina **[!UICONTROL Distinta base]** e trova la sezione relativa ai **[!UICONTROL dati di esempio]**.
-1. Scarica il `postman.json` facendo clic sui rispettivi pulsanti dell’interfaccia utente.
-1. Importa `postman.json` nel **[!DNL Postman Software]**.
-1. Crea un ambiente Postman dedicato per questa convalida (ad es. `Adobe <PLAYBOOK_NAME>`).
+>[!TIP]
+>
+>Se si utilizza un terminale per eseguire i ricci, è possibile impostare valori variabili prima di eseguire i ricci in modo che non sia necessario sostituire tali valori nei singoli ricci.
+>Ad esempio: Se imposti `ORG_ID=************@AdobeOrg`, shell sostituirà automaticamente ogni occorrenza di `$ORG_ID` con il valore, in modo da poter copiare, incollare ed eseguire i ricci sottostanti senza alcuna modifica.
+>
+> In questo documento vengono utilizzate le seguenti variabili
+>
+> ACCESS_TOKEN
+>
+> API_KEY
+>
+> ORG_ID
+>
+> NOME_SANDBOX
+>
+> PROFILE_SCHEMA_REF
+>
+> NOME_SET_DATI_PROFILO
+>
+> PROFILE_DATASET_ID
+>
+> PERCORSI_ID
+>
+> PROFILE_BASE_CONNECTION_ID
+>
+> PROFILE_SOURCE_CONNECTION_ID
+>
+> PROFILE_TARGET_CONNECTION_ID
+>
+> PROFILE_INLET_URL
+>
+> CUSTOMER_MOBILE_NUMBER
+>
+> NOME_CLIENTE
+>
+> CUSTOMER_LAST_NAME
+>
+> EMAIL
+>
+> EVENT_SCHEMA_REF
+>
+> NOME_SET_DATI_EVENTO
+>
+> EVENT_DATASET_ID
+>
+> EVENT_BASE_CONNECTION_ID
+>
+> EVENT_SOURCE_CONNECTION_ID
+>
+> EVENT_TARGET_CONNECTION_ID
+>
+> EVENT_INLET_URL
+>
+> TIMESTAMP
+>
+> UNIQUE_EVENT_ID
 
 ## Recupera il token IMS
 
->[!NOTE]
->
->Tutte le variabili di ambiente fanno distinzione tra maiuscole e minuscole, quindi utilizza sempre il nome esatto della variabile.
-
 1. Segui la documentazione dell’[autenticazione e accesso alle API di Experience Platform](https://experienceleague.adobe.com/docs/experience-platform/landing/platform-apis/api-authentication.html?lang=it) per generare il token di accesso.
-1. Memorizza il valore del token di accesso nelle variabili di ambiente denominate `ACCESS_TOKEN`.
-1. Memorizza altri valori relativi all’autenticazione come `API_KEY`, `IMS_ORG` e `SANDBOX_NAME` nelle variabili di ambiente.
-
->[!IMPORTANT]
->
->Prima di eseguire qualsiasi API da Postman, assicurati che tutte le variabili di ambiente richieste siano state aggiunte.
 
 ## Pubblica il percorso creato dal playbook
 
@@ -62,102 +100,543 @@ Ci sono 2 modi per pubblicare il percorso; puoi sceglierne uno qualsiasi:
 
    ![Oggetto del percorso](../assets/journey-object.png)
 
-1. **Utilizzo dell’API Postman**
+1. **Utilizzo di cURL**
 
-   1. Attiva la richiesta di **[!DNL Publish Journey]** da **[!DNL Journey Publish]** >**[!DNL Queue journey publish job]**.
-   1. La pubblicazione del percorso potrebbe richiedere del tempo, quindi per verificare lo stato esegui l’API dello stato di pubblicazione del percorso, fino a che `response.status` è `SUCCESS`. Se la pubblicazione del percorso richiede del tempo, attendi 10-15 secondi.
+   1. Pubblica il percorso. La risposta conterrà l’ID processo necessario nel passaggio successivo per recuperare lo stato di pubblicazione del percorso.
 
-   >[!NOTE]
-   >
-   >Tutte le variabili di ambiente fanno distinzione tra maiuscole e minuscole, quindi utilizza sempre il nome esatto della variabile.
+      ```bash
+      curl --location --request POST "https://journey-private.adobe.io/authoring/jobs/journeyVersions/$JOURNEY_ID/deploy" \
+      --header "Accept: */*" \
+      --header "Authorization: Bearer $ACCESS_TOKEN" \
+      --header "x-api-key: $API_KEY" \
+      --header "x-gw-ims-org-id: $ORG_ID" \
+      --header "x-sandbox-name: $SANDBOX_NAME" \
+      --header "Content-Type: application/json" 
+      ```
+
+   1. La pubblicazione del percorso potrebbe richiedere un po’ di tempo, quindi per controllare lo stato esegui sotto cURL, fino a quando `response.status` è `SUCCESS`, assicurati di attendere 10-15 secondi se la pubblicazione del percorso richiede tempo.
+
+      ```bash
+      curl --location "https://journey-private.adobe.io/authoring/jobs/$JOB_ID" \
+      --header "Authorization: Bearer $ACCESS_TOKEN" \
+      --header "x-api-key: $API_KEY" \
+      --header "x-gw-ims-org-id: $ORG_ID" \
+      --header "x-sandbox-name: $SANDBOX_NAME" \
+      --header "Content-Type: application/json"
+      ```
 
 ## Acquisisci il profilo cliente
 
 >[!TIP]
 >
->Puoi riutilizzare lo stesso indirizzo e-mail aggiungendo `+<variable>` nella tua e-mail, ad esempio `usertest@email.com` può essere riutilizzato come `usertest+v1@email.com` o `usertest+24jul@email.com`. Questo sarebbe utile per avere ogni volta un nuovo profilo, ma utilizzando sempre lo stesso ID e-mail.
+>Se il provider di posta elettronica supporta le e-mail con più, puoi riutilizzare lo stesso indirizzo e-mail aggiungendo `+<variable>` nell’e-mail, ad es. `usertest@email.com` può essere riutilizzato come `usertest+v1@email.com` o `usertest+24jul@email.com`. Questo sarebbe utile per avere ogni volta un nuovo profilo, ma utilizzando sempre lo stesso ID e-mail.
+>
+>P.S.: Le e-mail Plus sono una funzione configurabile che deve essere supportata dal provider di posta elettronica. Controlla se sei in grado di ricevere e-mail su tali indirizzi prima di utilizzarli nel test.
 
 1. L’utente che lo utilizza per la prima volta deve creare il file **[!DNL customer dataset]** e **[!DNL HTTP Streaming Inlet Connection]**.
 1. Se hai già creato il **[!DNL customer dataset]** e **[!DNL HTTP Streaming Inlet Connection]**, vai al passaggio `5`.
-1. Attiva **[!DNL Customer Profile Ingestion]** > **[!DNL Create Customer Profile InletId]** > **[!DNL Create Dataset]** per creare **[!DNL customer dataset]**; questo memorizzerà un `CustomerProfile_dataset_id` nelle variabili d’ambiente Postman.
-1. Crea **[!DNL HTTP Streaming Inlet Connection]**, utilizza le API Postman in **[!DNL Customer Profile Ingestion > Create Customer Profile InletId]**.
+1. Crea un set di dati del profilo cliente eseguendo il codice cURL seguente.
 
-   1. `CustomerProfile_dataset_id` deve essere disponibile nelle variabili d’ambiente Postman, in caso contrario consulta il passaggio `3`.
-   1. Attiva **[!DNL `CREATE Base Connection`]** su [!DNL create base connection].
-   1. Attiva **[!DNL `CREATE Source Connection`]** su [!DNL create source connection].
-   1. Attiva **[!DNL `CREATE Target Connection`]** su [!DNL create target connection].
-   1. Attiva **[!DNL `CREATE Dataflow`]** su [!DNL create dataflow].
-   1. Attiva **[!DNL `GET Base Connection`]**: questo memorizzerà automaticamente `CustomerProfile_inlet_id` nelle variabili d’ambiente Postman.
-
-1. A questo punto, `CustomerProfile_dataset_id` e `CustomerProfile_inlet_id` saranno disponibili nelle variabili d’ambiente Postman; in caso contrario, consulta il passaggio `3` o `4` rispettivamente.
-1. Per acquisire il cliente, l’utente deve archiviare `customer_country_code`, `customer_mobile_no`, `customer_first_name`, `customer_last_name` e `email` nelle variabili d’ambiente Postman.
-
-   1. `customer_country_code` corrisponde al prefisso internazionale del numero di cellulare, ad esempio `91` o `1`
-   1. `customer_mobile_no` corrisponde al numero di cellulare, ad esempio`9987654321`
-   1. `customer_first_name` corrisponde al nome dell’utente
-   1. `customer_last_name` corrisponde al cognome dell’utente
-   1. `email` corrisponde all’indirizzo e-mail dell’utente, che è fondamentale per utilizzare un ID e-mail distinto in modo che possa essere importato un nuovo profilo.
-
-1. Aggiorna la richiesta di Postman **[!DNL Customer Ingestion]** > **[!DNL Customer Streaming Ingestion]** per cambiare il canale preferito del cliente; per impostazione predefinita, nella richiesta è configurato [!DNL `email`].
-
-   ```js
-   "consents": {
-       "marketing": {
-           "preferred": "email",
-           "email": {
-               "val": "y"
-           },
-           "push": {
-               "val": "n"
-           },
-           "sms": {
-               "val": "n"
-           }
+   ```bash
+   curl --location "https://platform.adobe.io/data/foundation/catalog/dataSet" \
+   --header "Authorization: Bearer $ACCESS_TOKEN" \
+   --header "x-gw-ims-org-id: $ORG_ID" \
+   --header "x-sandbox-name: $SANDBOX_NAME" \
+   --header "x-api-key: $API_KEY" \
+   --header "Content-Type: application/json" \
+   --data '{
+       "name": "'$PROFILE_DATASET_NAME'",
+       "schemaRef": {
+           "id": "'$PROFILE_SCHEMA_REF'",
+           "contentType": "application/vnd.adobe.xed-full-notext+json; version=1"
+       },
+       "tags": {
+           "unifiedProfile": [
+           "enabled:true"
+           ],
+           "unifiedIdentity": [
+           "enabled:true"
+           ]
+       },
+       "fileDescription": {
+           "persisted": true,
+           "containerFormat": "parquet",
+           "format": "parquet"
        }
-   }
+   }'
    ```
 
-1. Cambia il canale preferito in `sms` o `push` e imposta il rispettivo valore del canale su `y` e `n` ad altri valori, ad esempio
+   La risposta sarà nel formato `"@/dataSets/<PROFILE_DATASET_ID>"`.
 
-   ```js
-   "consents": {
-       "marketing": {
-           "preferred": "sms",
-           "email": {
-               "val": "n"
+1. Crea **[!DNL HTTP Streaming Inlet Connection]** con l’aiuto dei seguenti passaggi.
+   1. Creare una connessione di base.
+
+      ```bash
+      curl --location "https://platform.adobe.io/data/foundation/flowservice/connections?Cache-Control=no-cache" \
+      --header "Authorization: Bearer $ACCESS_TOKEN" \
+      --header "x-gw-ims-org-id: $ORG_ID" \
+      --header "x-sandbox-name: $SANDBOX_NAME" \
+      --header "x-api-key: $API_KEY" \
+      --header "Content-Type: application/json" \
+      --data '{
+          "name": "AbandonedCartProduct_Base_ConnectionForCustomerProfile_1694458293",
+          "description": "Marketer Playground Playbook-Validation Customer Profile Base Connection 1",
+          "auth": {
+              "specName": "Streaming Connection",
+              "params": {
+                  "dataType": "xdm"
+              }
+          },
+          "connectionSpec": {
+              "id": "bc7b00d6-623a-4dfc-9fdb-f1240aeadaeb",
+              "version": "1.0"
+          }
+      }'
+      ```
+
+      Ottieni l’ID della connessione di base dalla risposta e utilizzalo al posto di `PROFILE_BASE_CONNECTION_ID` nei seguenti cURL
+
+   1. Crea la connessione sorgente.
+
+      ```bash
+      curl --location "https://platform.adobe.io/data/foundation/flowservice/sourceConnections" \
+      --header "Authorization: Bearer $ACCESS_TOKEN" \
+      --header "x-gw-ims-org-id: $ORG_ID" \
+      --header "x-sandbox-name: $SANDBOX_NAME" \
+      --header "Content-Type: application/json" \
+      --header "x-api-key: $API_KEY" \
+      --data '{
+          "name": "AbandonedCartProduct_Source_ConnectionForCustomerProfile_1694458318",
+          "description": "Marketer Playground Playbook-Validation Customer Profile Source Connection 1",
+          "baseConnectionId": "'$PROFILE_BASE_CONNECTION_ID'",
+          "connectionSpec": {
+              "id": "bc7b00d6-623a-4dfc-9fdb-f1240aeadaeb",
+              "version": "1.0"
+          }
+      }'
+      ```
+
+      Ottieni l’ID della connessione di origine dalla risposta e utilizzalo al posto di `PROFILE_SOURCE_CONNECTION_ID`
+
+   1. Crea una connessione di destinazione.
+
+      ```bash
+      curl --location "https://platform.adobe.io/data/foundation/flowservice/targetConnections" \
+      --header "Authorization: Bearer $ACCESS_TOKEN" \
+      --header "x-gw-ims-org-id: $ORG_ID" \
+      --header "x-sandbox-name: $SANDBOX_NAME" \
+      --header "Content-Type: application/json" \
+      --header "x-api-key: $API_KEY" \
+      --data '{
+          "name": "AbandonedCartProduct_Target_ConnectionForCustomerProfile_1694458407",
+          "description": "Marketer Playground Playbook-Validation Customer Profile Target Connection 1",
+          "data": {
+              "format": "parquet_xdm",
+              "schema": {
+                  "version": "application/vnd.adobe.xed-full+json;version=1",
+                  "id": "'$PROFILE_SCHEMA_REF'"
+              },
+              "properties": null
+          },
+          "connectionSpec": {
+              "id": "c604ff05-7f1a-43c0-8e18-33bf874cb11c",
+              "version": "1.0"
+          },
+          "params": {
+              "dataSetId": "'$PROFILE_DATASET_ID'"
+          }
+      }'
+      ```
+
+      Ottieni l’ID della connessione di destinazione dalla risposta e utilizzalo al posto di `PROFILE_TARGET_CONNECTION_ID`
+
+   1. Crea un flusso di dati.
+
+      ```bash
+      curl --location "https://platform.adobe.io/data/foundation/flowservice/flows" \
+      --header "Authorization: Bearer $ACCESS_TOKEN" \
+      --header "x-gw-ims-org-id: $ORG_ID" \
+      --header "x-sandbox-name: $SANDBOX_NAME" \
+      --header "Content-Type: application/json" \
+      --header "x-api-key: $API_KEY" \
+      --data '{
+          "name": "AbandonedCartProduct_Dataflow_ForCustomerCustomerProfile_1694460528",
+          "description": "Marketer Playground Playbook-Validation Customer Profile Dataflow 1",
+          "flowSpec": {
+              "id": "d8a6f005-7eaf-4153-983e-e8574508b877",
+              "version": "1.0"
+          },
+          "sourceConnectionIds": [
+              "'$PROFILE_SOURCE_CONNECTION_ID'"
+          ],
+          "targetConnectionIds": [
+              "'$PROFILE_TARGET_CONNECTION_ID'"
+          ]
+      }'
+      ```
+
+   1. Ottieni connessione di base. Il risultato conterrà inletUrl necessario per inviare i dati del profilo.
+
+      ```bash
+      curl --location "https://platform.adobe.io/data/foundation/flowservice/connections/$PROFILE_BASE_CONNECTION_ID" \
+      --header "Authorization: Bearer $ACCESS_TOKEN" \
+      --header "x-gw-ims-org-id: $ORG_ID" \
+      --header "x-sandbox-name: $SANDBOX_NAME" \
+      --header "Content-Type: application/json" \
+      --header "x-api-key: $API_KEY"
+      ```
+
+      Ottieni inletUrl dalla risposta e utilizzalo al posto di `PROFILE_INLET_URL`
+
+1. In questo passaggio l’utente deve avere i valori `PROFILE_DATASET_ID` e `PROFILE_INLET_URL`; in caso contrario, si rimanda al punto `3` o `4` rispettivamente.
+1. Per acquisire il cliente, l’utente deve sostituire `CUSTOMER_MOBILE_NUMBER`, `CUSTOMER_FIRST_NAME`, `CUSTOMER_LAST_NAME` e `EMAIL` in sotto cURL.
+
+   1. `CUSTOMER_MOBILE_NUMBER` corrisponde al numero di cellulare, ad esempio`+1 000-000-0000`
+   1. `CUSTOMER_FIRST_NAME` corrisponde al nome dell’utente
+   1. `CUSTOMER_LAST_NAME` corrisponde al cognome dell’utente
+   1. `EMAIL` corrisponde all’indirizzo e-mail dell’utente, che è fondamentale per utilizzare un ID e-mail distinto in modo che possa essere importato un nuovo profilo.
+
+1. Infine, esegui il curl per acquisire il profilo cliente. Aggiorna `body.xdmEntity.consents.marketing.preferred` a `email`, `sms`, o `push` in base ai canali che intendi verificare. Imposta anche corrispondente `val` a `y`.
+
+   ```bash
+   curl --location "$PROFILE_INLET_URL?synchronousValidation=true" \
+   --header 'Content-Type: application/json' \
+   --data-raw '{
+       "header": {
+           "schemaRef": {
+               "id": "'$PROFILE_SCHEMA_REF'",
+               "contentType": "application/vnd.adobe.xed-full+json;version=1.0"
            },
-           "push": {
-               "val": "n"
+           "imsOrgId": "'$ORG_ID'",
+           "datasetId": "'$PROFILE_DATASET_ID'",
+           "source": {
+               "name": "Streaming dataflow - 1694460605"
+           }
+       },
+       "body": {
+           "xdmMeta": {
+               "schemaRef": {
+                   "id": "'$PROFILE_SCHEMA_REF'",
+                   "contentType": "application/vnd.adobe.xed-full+json;version=1.0"
+               }
            },
-           "sms": {
-               "val": "y"
+           "xdmEntity": {
+           "consents": {
+               "marketing": {
+                   "preferred": "email",
+                   "email": {
+                       "val": "y"
+                   },
+                   "push": {
+                       "val": "n"
+                   },
+                   "sms": {
+                       "val": "n"
+                   }
+               }
+           },
+           "mobilePhone": {
+               "number": "'$CUSTOMER_MOBILE_NUMBER'",
+               "status": "active"
+           },
+           "person": {
+               "name": {
+               "firstName": "'$CUSTOMER_FIRST_NAME'",
+               "lastName": "'$CUSTOMER_LAST_NAME'"
+               }
+           },
+           "personalEmail": {
+               "address": "'$EMAIL'"
+           },
+           "testProfile": false
            }
        }
-   }
+   }'
    ```
 
-1. Infine Attiva **[!DNL `Customer Profile Ingestion > Customer Profile Streaming Ingestion`]** per importare il profilo cliente.
-
-## Acquisisci evento
+## Acquisisci evento trigger Percorso
 
 1. L’utente che lo utilizza per la prima volta deve creare **[!DNL event dataset]** e **[!DNL HTTP Streaming Inlet Connection for events]**
 1. Se hai già creato **[!DNL event dataset]** e **[!DNL HTTP Streaming Inlet Connection for events]**, vai al passaggio `5`.
-1. Attiva **[!DNL `Schemas Data Ingestion > AEP Demo Schema Ingestion > Create AEP Demo Schema InletId > Create Dataset`]** per creare **[!DNL event dataset]**, questo memorizzerà `AEPDemoSchema_dataset_id` nelle variabili d’ambiente Postman
-1. Crea **[!DNL HTTP Streaming Inlet Connection for events]**, utilizza le API Postman in **[!DNL Schemas Data Ingestion]** > **[!DNL AEP Demo Schema Ingestion]** > **[!DNL Create AEP Demo Schema InletId]**.
+1. Crea un set di dati evento eseguendo il codice cURL seguente.
 
-   1. `AEPDemoSchema_dataset_id` deve essere disponibile nelle variabili d’ambiente Postman, in caso contrario, consulta il passaggio `3`
-   1. Attiva **[!DNL `CREATE Base Connection`]** su [!DNL create base connection]
-   1. Attiva **[!DNL `CREATE Source Connection`]** su [!DNL create source connection]
-   1. Attiva **[!DNL `CREATE Target Connection`]** su [!DNL create target connection]
-   1. Attiva **[!DNL `CREATE Dataflow`]** su [!DNL create dataflow]
-   1. Attiva **[!DNL `GET Base Connection`]**: questo memorizzerà automaticamente `AEPDemoSchema_inlet_id` nelle variabili d’ambiente Postman
+   ```bash
+   curl --location "https://platform.adobe.io/data/foundation/catalog/dataSet" \
+   --header "Authorization: Bearer $ACCESS_TOKEN" \
+   --header "x-gw-ims-org-id: $ORG_ID" \
+   --header "x-sandbox-name: $SANDBOX_NAME" \
+   --header "x-api-key: $API_KEY" \
+   --header "Content-Type: application/json" \
+   --data '{
+       "name": "'$EVENT_DATASET_NAME'",
+       "schemaRef": {
+           "id": "'$EVENT_SCHEMA_REF'",
+           "contentType": "application/vnd.adobe.xed-full-notext+json; version=1"
+       },
+       "tags": {
+           "unifiedProfile": [
+               "enabled:true"
+           ],
+           "unifiedIdentity": [
+               "enabled:true"
+           ]
+       },
+       "fileDescription": {
+           "persisted": true,
+           "containerFormat": "parquet",
+           "format": "parquet"
+       }
+   }'
+   ```
 
-1. A questo punto, `AEPDemoSchema_dataset_id` e `AEPDemoSchema_inlet_id` saranno disponibili nelle variabili d’ambiente Postman, in caso contrario, consulta il passaggio `3` o `4` rispettivamente
-1. Per acquisire un evento, l’utente deve modificare la variabile temporale `timestamp` nel corpo della richiesta di **[!DNL Schemas Data Ingestion]** > **[!DNL AEP Demo Schema Ingestion]** > **[!DNL AEP Demo Schema Streaming Ingestion]** in Postman.
+   La risposta sarà nel formato `"@/dataSets/<EVENT_DATASET_ID>"`
 
-   1. `timestamp` corrisponde all’ora in cui si è verificato l’evento; utilizza il timestamp corrente, ad esempio `2023-07-21T16:37:52+05:30` regola il fuso orario secondo le tue necessità.
+1. Crea **[!DNL HTTP Streaming Inlet Connection for events]**  con l’aiuto dei seguenti passaggi.
+   <!-- TODO: Is the name unique? If so, we may need to generate and provide in variables.txt-->
+   1. Creare una connessione di base.
 
-1. Attiva **[!DNL Schemas Data Ingestion > AEP Demo Schema Ingestion > AEP Demo Schema Streaming Ingestion]** per acquisire l’evento, in modo che il percorso possa essere attivato
+      ```bash
+      curl --location "https://platform.adobe.io/data/foundation/flowservice/connections?Cache-Control=no-cache" \
+      --header "Authorization: Bearer $ACCESS_TOKEN" \
+      --header "x-gw-ims-org-id: $ORG_ID" \
+      --header "x-sandbox-name: $SANDBOX_NAME" \
+      --header "x-api-key: $API_KEY" \
+      --header "Content-Type: application/json" \
+      --data '{
+          "name": "AbandonedCartProduct_Base_ConnectionForAEPDemoSchema_1694461448",
+          "description": "Marketer Playground Playbook-Validation AEP Demo Schema Base Connection 1",
+          "auth": {
+              "specName": "Streaming Connection",
+              "params": {
+                  "dataType": "xdm"
+              }
+          },
+          "connectionSpec": {
+              "id": "bc7b00d6-623a-4dfc-9fdb-f1240aeadaeb",
+              "version": "1.0"
+          }
+      }'
+      ```
+
+      Ottieni l’ID della connessione di base dalla risposta e utilizzalo al posto di `EVENT_BASE_CONNECTION_ID`
+
+   1. Crea la connessione sorgente.
+
+      ```bash
+      curl --location "https://platform.adobe.io/data/foundation/flowservice/sourceConnections" \
+      --header "Authorization: Bearer $ACCESS_TOKEN" \
+      --header "x-gw-ims-org-id: $ORG_ID" \
+      --header "x-sandbox-name: $SANDBOX_NAME" \
+      --header "x-api-key: $API_KEY" \
+      --header "Content-Type: application/json" \
+      --data '{
+          "name": "AbandonedCartProduct_Source_ConnectionForAEPDemoSchema_1694461464",
+          "description": "Marketer Playground Playbook-Validation AEP Demo Schema Source Connection 1",
+          "baseConnectionId": "'$EVENT_BASE_CONNECTION_ID'",
+          "connectionSpec": {
+              "id": "bc7b00d6-623a-4dfc-9fdb-f1240aeadaeb",
+              "version": "1.0"
+          }
+      }'
+      ```
+
+      Ottieni l’ID della connessione di origine dalla risposta e utilizzalo al posto di `EVENT_SOURCE_CONNECTION_ID`
+
+   1. Crea una connessione di destinazione.
+
+      ```bash
+      curl --location "https://platform.adobe.io/data/foundation/flowservice/sourceConnections" \
+      --header "Authorization: Bearer $ACCESS_TOKEN" \
+      --header "x-gw-ims-org-id: $ORG_ID" \
+      --header "x-sandbox-name: $SANDBOX_NAME" \
+      --header "x-api-key: $API_KEY" \
+      --header "Content-Type: application/json" \
+      --data '{
+          "name": "AbandonedCartProduct_Target_ConnectionForAEPDemoSchema_1694802667",
+          "description": "Marketer Playground Playbook-Validation AEP Demo Schema Target Connection 1",
+          "data": {
+              "format": "parquet_xdm",
+              "schema": {
+                  "version": "application/vnd.adobe.xed-full+json;version=1",
+                  "id": "'$EVENT_SCHEMA_REF'"
+              },
+              "properties": null
+          },
+          "connectionSpec": {
+              "id": "c604ff05-7f1a-43c0-8e18-33bf874cb11c",
+              "version": "1.0"
+          },
+          "params": {
+              "dataSetId": "'$EVENT_DATASET_ID'"
+          }
+      }'
+      ```
+
+      Ottieni l’ID della connessione di destinazione dalla risposta e utilizzalo al posto di `EVENT_TARGET_CONNECTION_ID`
+
+   1. Crea un flusso di dati.
+
+      ```bash
+      curl --location "https://platform.adobe.io/data/foundation/flowservice/flows" \
+      --header "Authorization: Bearer $ACCESS_TOKEN" \
+      --header "x-gw-ims-org-id: $ORG_ID" \
+      --header "x-sandbox-name: $SANDBOX_NAME" \
+      --header "x-api-key: $API_KEY" \
+      --header "Content-Type: application/json" \
+      --data '{
+          "name": "AbandonedCartProduct_Dataflow_ForCustomerAEPDemoSchema_1694461564",
+          "description": "Marketer Playground Playbook-Validation AEP Demo Schema Dataflow 1",
+          "flowSpec": {
+              "id": "d8a6f005-7eaf-4153-983e-e8574508b877",
+              "version": "1.0"
+          },
+          "sourceConnectionIds": [
+              "'$EVENT_SOURCE_CONNECTION_ID'"
+          ],
+          "targetConnectionIds": [
+              "'$EVENT_TARGET_CONNECTION_ID'"
+          ]
+      }'
+      ```
+
+   1. Ottieni connessione di base. Il risultato conterrà inletUrl necessario per inviare i dati del profilo.
+
+   ```bash
+   curl --location "https://platform.adobe.io/data/foundation/flowservice/connections/$EVENT_BASE_CONNECTION_ID" \
+       --header "Authorization: Bearer $ACCESS_TOKEN" \
+       --header "x-gw-ims-org-id: $ORG_ID" \
+       --header "x-sandbox-name: $SANDBOX_NAME" \
+       --header "x-api-key: $API_KEY" \
+       --header "Content-Type: application/json" 
+   ```
+
+   Ottieni inletUrl dalla risposta e utilizzalo al posto di `EVENT_INLET_URL`
+
+1. In questo passaggio l’utente deve avere i valori `EVENT_DATASET_ID` e `EVENT_INLET_URL`; in caso contrario, si rimanda al punto `3` o `4` rispettivamente.
+1. Per acquisire l’evento, l’utente deve modificare la variabile temporale `TIMESTAMP` nel corpo della richiesta di cURL, di seguito.
+
+   1. Sostituisci `body.xdmEntity` con il contenuto del json evento scaricato.
+   1. `TIMESTAMP` se l’ora dell’occorrenza dell’evento è, utilizza la marca temporale in fuso orario UTC, ad esempio `2023-09-05T23:57:00.071+00:00`.
+   1. Imposta un valore univoco per la variabile `UNIQUE_EVENT_ID`.
+
+   ```bash
+   curl --location "$EVENT_INLET_URL?synchronousValidation=true" \
+   --header 'Content-Type: application/json' \
+   --data-raw '{
+       "header": {
+           "schemaRef": {
+               "id": "'$EVENT_SCHEMA_REF'",
+               "contentType": "application/vnd.adobe.xed-full+json;version=1.0"
+           },
+           "imsOrgId": "'$ORG_ID'",
+           "datasetId": "'$EVENT_DATASET_ID'",
+           "source": {
+               "name": "Streaming dataflow - 8/31/2023 9:04:25 PM"
+           }
+       },
+       "body": {
+           "xdmMeta": {
+               "schemaRef": {
+                   "id": "'$EVENT_SCHEMA_REF'",
+                   "contentType": "application/vnd.adobe.xed-full+json;version=1.0"
+               }
+           },
+           "xdmEntity": {
+               "endUserIDs": {
+                   "_experience": {
+                       "aaid": {
+                           "id": "'$EMAIL'"
+                       },
+                       "emailid": {
+                           "id": "'$EMAIL'"
+                       }
+                   }
+               },
+               "_experience": {
+                   "analytics": {
+                       "customDimensions": {
+                           "eVars": {
+                           "eVar235": "AC11147"
+                           }
+                       }
+                   }
+               },
+               "_id": "'$UNIQUE_EVENT_ID'",
+               "commerce": {
+                   "productListAdds": {
+                       "value": 11498
+                   }
+               },
+               "eventType": "commerce.productListAdds",
+               "productListItems": [
+                   {
+                       "_id": "ACS1620",
+                       "SKU": "P1",
+                       "_experience": {
+                           "analytics": {
+                           "customDimensions": {
+                               "eVars": {
+                                   "eVar1": "Pants"
+                               }
+                           }
+                           }
+                       },
+                       "currencyCode": "USD",
+                       "name": "Sample value",
+                       "priceTotal": 30841.13,
+                       "product": "https://ns.adobe.com/xdm/common/uri",
+                       "productAddMethod": "Sample value",
+                       "quantity": 1
+                   },
+                   {
+                       "_id": "ACS1729",
+                       "SKU": "P2",
+                       "_experience": {
+                           "analytics": {
+                               "customDimensions": {
+                                   "eVars": {
+                                       "eVar1": "Galliano"
+                                   }
+                               }
+                           }
+                       },
+                       "currencyCode": "USD",
+                       "name": "Sample value",
+                       "priceTotal": 20841.13,
+                       "product": "https://ns.adobe.com/xdm/common/uri",
+                       "productAddMethod": "Sample value",
+                       "quantity": 2
+                   }
+               ],
+               "timestamp": "'$TIMESTAMP'",
+               "web": {
+                   "webInteraction": {
+                       "URL": "https://experienceleague.adobe.com/docs/experience-platform/edge/data-collection/collect-commerce-data.html?lang=en",
+                       "name": "Sample value",
+                       "region": "Sample value"
+                   },
+                   "webPageDetails": {
+                       "URL": "https://experienceleague.adobe.com/docs/experience-platform/edge/data-collection/collect-commerce-data.html?lang=en",
+                       "isErrorPage": false,
+                       "isHomePage": false,
+                       "name": "Sample value",
+                       "pageViews": {
+                           "id": "Sample value",
+                           "value": 1
+                       },
+                       "server": "Sample value",
+                       "siteSection": "Sample value",
+                       "viewName": "Sample value"
+                   },
+                   "webReferrer": {
+                   "URL": "Sample value",
+                   "type": "internal"
+                   }
+               }
+           }
+       }
+   }'
+   ```
 
 ## Convalida finale
 
