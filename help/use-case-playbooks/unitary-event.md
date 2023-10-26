@@ -3,7 +3,7 @@ title: Evento unitario
 description: Questa è una pagina di istruzioni per la simulazione del tipo di “[!UICONTROL evento unitario]” di convalida del percorso.
 exl-id: 314f967c-e10f-4832-bdba-901424dc2eeb
 source-git-commit: 194667c26ed002be166ab91cc778594dc1f09238
-workflow-type: ht
+workflow-type: tm+mt
 source-wordcount: '889'
 ht-degree: 100%
 
